@@ -4,7 +4,7 @@ You need to have ffmpeg-6.0 at least in the project directory to make music func
 Currently works well hosted with 2 core CPU and 6 GB RAM on Oracle Cloud.
 
 
-                                  -------***AVAILABLE COMMANDS : 19***-------
+                                   -------***AVAILABLE COMMANDS : 19***-------
 
                                    For the commands with $ at the beginning.
                                    Type '?commands [command] for specific info.
@@ -27,15 +27,12 @@ Currently works well hosted with 2 core CPU and 6 GB RAM on Oracle Cloud.
                                    ?randomdog: Shows a random dog image.
                                    ?randomcat: Shows a random cat image.
                                    ?randomnews: Shows random news.
-                                   ($)?randomwaifu [nsfw/sfw] [category]: Shows a random anime girl image,
-                                   using parameters is optional.
+                                   ($)?randomwaifu [nsfw/sfw] [category]: Shows a random anime girl image, using parameters is optional.
                                    ?joke me: Jokes you.
 
 
-                                   "?lolmastery [Champion Name(no spaces)] [Summoner Name(no spaces)] [Server]: "
-                                   "Shows the mastery points for desired character.\n"
+                                   ?lolmastery [Champion Name(no spaces)] [Summoner Name(no spaces)] [Server]: Shows the mastery points for desired character.
 
-                                   "?lollevel [Summoner Name(no spaces)] [Server]: Shows account level on League of Legends.\n"
+                                   ?lollevel [Summoner Name(no spaces)] [Server]: Shows account level on League of Legends.
 
-                                   "?lolrank [Summoner Name(no spaces)] [Server] [flex/soloq]: "
-                                   "Shows flex or soloq rank on League of Legends.")
+                                   ?lolrank [Summoner Name(no spaces)] [Server] [flex/soloq]: Shows flex or soloq rank on League of Legends.
