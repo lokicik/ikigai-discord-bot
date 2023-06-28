@@ -24,8 +24,8 @@ yt_dl_opts = {'format': 'bestaudio/best'}
 ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
 ffmpeg_options = {'options': "-vn"}
 
-CHANNEL_ID = []
-BOT_USER_ID = 776149156745183282
+CHANNEL_ID = "REPLACE WITH DESIRED CHANNEL ID FOR SCHEDULED MESSAGES"
+BOT_USER_ID = "REPLACE WITH BOT USER ID"
 TARGET_HOURS = [18]
 intents = discord.Intents.all()
 intents.message_content = True
