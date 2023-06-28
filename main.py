@@ -1,7 +1,6 @@
 import requests
 import discord
 import asyncio
-import replicate
 from datetime import datetime, timedelta
 import random
 import pandas
@@ -11,17 +10,21 @@ from urllib.parse import quote
 import yt_dlp
 import queue
 
+
+
 voice_clients = {}
-REPLICATE_API_TOKEN = os.environ.get("REPLICATE_API_TOKEN")
+champ_data = pandas.read_json("./champions.json")
+API_KEY = os.getenv('RIOT_API_KEY')
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
+TOKEN = os.getenv('TOKEN')
+
+
 song_queues = {}
 yt_dl_opts = {'format': 'bestaudio/best'}
 ytdl = yt_dlp.YoutubeDL(yt_dl_opts)
 ffmpeg_options = {'options': "-vn"}
-champ_data = pandas.read_json("./champions.json")
-API_KEY = os.environ.get("RIOT_API_KEY")
-NEWS_API_KEY = os.environ.get("NEWS_API_KEY")
-TOKEN = os.environ.get("TOKEN")
-CHANNEL_ID = 1111027488253022310  
+
+CHANNEL_ID = []
 BOT_USER_ID = 776149156745183282
 TARGET_HOURS = [18]
 intents = discord.Intents.all()
@@ -31,7 +34,7 @@ intents.members = True
 intents.guilds = True
 intents.voice_states = True
 client = discord.Client(intents=intents)
-replicate.Client(api_token=REPLICATE_API_TOKEN)
+
 
 waifu_category_list_for_lazy_people_sfw = ["waifu", "neko", "shinobu", "megumin", "bully", "cuddle", "cry", "hug",
                                            "awoo", "kiss", "lick", "pat", "smug",
@@ -53,6 +56,32 @@ async def on_ready():
     print('---------------------------------------------------')
     await send_now()  # Send a message immediately after the bot starts
     await send_scheduled_messages()
+
+
+async def join(message):
+    # Check if the author is in a voice channel
+    if message.author.voice is None:
+        await message.channel.send("You are not connected to a voice channel.")
+        return
+
+    # Get the voice channel that the author is in
+    voice_channel = message.author.voice.channel
+
+    # Check if the bot is already in a voice channel
+    if message.guild.id in voice_clients:
+        voice_client = voice_clients[message.guild.id]
+        if voice_client.channel == voice_channel:
+            await message.channel.send("I am already in this voice channel.")
+            return
+        else:
+            await voice_client.disconnect()
+            del voice_clients[message.guild.id]
+
+    # Join the voice channel
+    voice_client = await voice_channel.connect()
+    voice_clients[message.guild.id] = voice_client
+
+    await message.channel.send(f"Joined the voice channel: {voice_channel.name}.")
 
 
 @client.event
@@ -89,12 +118,20 @@ async def play_next_song(guild_id):
                 # Queue is empty, bot needs to join the voice channel again
                 if guild_id in voice_clients:
                     voice_client = voice_clients[guild_id]
-                    await voice_client.disconnect()
-                    del voice_clients[guild_id]
-                    # Check if the bot is already in a voice channel and rejoin
-                    if not voice_client.channel:
-                        await voice_client.channel.connect()
-                        print("Rejoined the voice channel.")
+                    disconnect_flag = True  # Flag to indicate whether to disconnect or not
+                    await asyncio.sleep(10)  # Wait for 10 seconds before disconnecting
+
+                    # Check if a song was added to the queue while waiting
+                    if not song_queues[guild_id].empty():
+                        disconnect_flag = False  # Do not disconnect if a song was added
+
+                    if disconnect_flag:
+                        await voice_client.disconnect()
+                        del voice_clients[guild_id]
+                        # Check if the bot is already in a voice channel and rejoin
+                        if not voice_client.channel:
+                            await voice_client.channel.connect()
+                            print("Rejoined the voice channel.")
 
 
         except Exception as err:
@@ -303,11 +340,22 @@ async def on_message(message):
     # Stop the currently playing song and disconnect from the voice channel
     if "?quit" in message.content:
         try:
-            voice_clients[message.guild.id].stop()
-            await voice_clients[message.guild.id].disconnect()
-            await message.channel.send("Successfully left the channel.")
+            guild_id = message.guild.id
+            if guild_id in voice_clients:
+                voice_client = voice_clients[guild_id]
+                # Stop playing any song
+                voice_client.stop()
+                # Disconnect from the voice channel
+                await voice_client.disconnect()
+                del voice_clients[guild_id]
+                await message.channel.send("Successfully left the channel.")
+            else:
+                await message.channel.send("I am not currently connected to a voice channel.")
         except Exception as err:
             print(f"Error stopping song: {err}")
+
+    if "?join" in message.content:
+        await join(message)
 
     if message.content.lower() == "?commands randomwaifu":
         await message.channel.send("Selectable categories for ?randomwaifu:\n\n"
@@ -319,7 +367,7 @@ async def on_message(message):
                                    "waifu, neko, trap, blowjob")
 
     if message.content.lower() == "?commands":
-        await message.channel.send("-------***AVAILABLE COMMANDS : 19***-------\n"
+        await message.channel.send("-------***AVAILABLE COMMANDS : 20***-------\n"
                                    "For the commands with $ at the beginning:\n"
                                    "Type '?commands [command] for specific info.'\n"
                                    "------------------------------------------\n"
@@ -331,6 +379,7 @@ async def on_message(message):
                                    "?pause: Pauses the current playing song.\n"
                                    "?resume: Resumes the current playing song.\n"
                                    "?quit: Stops the current playing song and disconnects from the joined channel.\n"
+                                   "?join: Joins the channel.\n"
                                    "?next: If there's a queue, plays the next song.\n"
                                    "?remove [queue number]: Removes the song with the queue number index from queue.\n"
                                    "?queue: Shows the song playing and to be played.\n\n\n"
@@ -606,7 +655,7 @@ async def get_mastery_points(summoner_name, champ_name, server):
 
     with open("./champions.json", "r") as file:
         champ_data = json.load(file)
-        print(champ_data)
+
 
     champ_id = int(champ_data["data"][champ_name]["key"])
 
