@@ -4,7 +4,7 @@ You need to have ffmpeg-6.0 at least in the project directory to make music func
 Currently works well hosted with 2 core CPU and 6 GB RAM on Oracle Cloud.
 
 
-                        -------***AVAILABLE COMMANDS : 19***-------
+                        -------***AVAILABLE COMMANDS : 20***-------
                                             
                         For the commands with $ at the beginning.
                         Type '?commands [command] for specific info.
@@ -18,6 +18,7 @@ Currently works well hosted with 2 core CPU and 6 GB RAM on Oracle Cloud.
                         ?pause: Pauses the current playing song.
                         ?resume: Resumes the current playing song.
                         ?quit: Stops the current playing song and disconnects from the joined channel.
+                        ?join: Joins the channel if not connected.
                         ?next: If there's a queue, plays the next song.
                         ?remove [queue number]: Removes the song with the queue number index from queue.
                         ?queue: Shows the song playing and to be played.
